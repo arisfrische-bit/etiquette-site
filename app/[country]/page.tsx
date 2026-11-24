@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { countries } from "@/data/etiquette";
+import { supabase } from "@/lib/supabase";
 
 export const instant = false;
 
-export function generateStaticParams() {
-  return countries.map((c) => ({ country: c.slug }));
+export async function generateStaticParams() {
+  const { data, error } = await supabase.from("countries").select("slug");
+  if (error) throw new Error("Supabase error: " + error.message);
+  return (data ?? []).map((c: { slug: string }) => ({ country: c.slug }));
 }
 
 export default async function CountryPage({
@@ -14,7 +16,13 @@ export default async function CountryPage({
   params: Promise<{ country: string }>;
 }) {
   const { country } = await params;
-  const data = countries.find((c) => c.slug === country);
+
+  const { data } = await supabase
+    .from("countries")
+    .select("name, tagline, items(id, text, position)")
+    .eq("slug", country)
+    .order("position", { referencedTable: "items" })
+    .single();
 
   if (!data) notFound();
 
@@ -28,10 +36,10 @@ export default async function CountryPage({
       <p className="text-lg text-gray-400 mb-8">{data.tagline}</p>
 
       <ol className="grid gap-3">
-        {data.items.map((item, i) => (
-          <li key={i} className="border rounded-xl p-5 flex gap-4">
+        {data.items.map((item: { id: number; text: string }, i: number) => (
+          <li key={item.id} className="border rounded-xl p-5 flex gap-4">
             <span className="font-bold text-gray-400">{i + 1}</span>
-            <span>{item}</span>
+            <span>{item.text}</span>
           </li>
         ))}
       </ol>
