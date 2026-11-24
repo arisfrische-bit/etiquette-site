@@ -1,33 +1,57 @@
-import Link from "next/link";
+import { supabase } from "@/lib/supabase";
+import CountryCarousel from "./CountryCarousel";
 
-const countries = [
-  { slug: "japan", name: "Japan", flag: "🇯🇵" },
-  { slug: "spain", name: "Spain", flag: "🇪🇸" },
-  { slug: "uk", name: "United Kingdom", flag: "🇬🇧" },
+export const instant = false;
+
+const principles = [
+  {
+    title: "Drafted, then reviewed",
+    text: "Every tip starts as a draft. Locals confirm it, challenge it, or push it down.",
+  },
+  {
+    title: "Only residents vote",
+    text: "You can vote on a country only if you live there and have been verified.",
+  },
+  {
+    title: "Order shows what matters",
+    text: "The tips locals care about most sit at the top of each list.",
+  },
 ];
 
-export default function Home() {
-  return (
-    <main className="max-w-2xl mx-auto p-8">
-      <h1 className="text-4xl font-bold mb-2">Local Etiquette</h1>
-      <p className="text-lg text-gray-500 mb-8">
-        What the locals really appreciate, voted on by the locals themselves.
-      </p>
+export default async function Home() {
+  const { data, error } = await supabase
+    .from("countries")
+    .select("slug, name, teaser, color, text_color, region, featured")
+    .order("id");
+  if (error) throw new Error("Supabase error: " + error.message);
+  const countries = data ?? [];
 
-      <div className="grid gap-4">
-        {countries.map((c) => (
-          <Link
-            key={c.slug}
-            href={`/${c.slug}`}
-            className="border rounded-xl p-6 text-2xl hover:bg-gray-100 hover:text-black transition"
-          >
-            {c.flag} {c.name}
-          </Link>
-        ))}
-      </div>
-    <Link href="/login" className="block mt-8 text-gray-400 hover:underline">
-      Log in or sign up
-    </Link>
-    </main>
+  return (
+    <>
+      <section className="mx-auto max-w-5xl px-6 py-16 sm:py-24">
+        <h1 className="font-display text-5xl sm:text-7xl font-semibold tracking-tight max-w-3xl">
+          Know what locals appreciate before you land.
+        </h1>
+        <p className="mt-6 text-xl text-muted max-w-xl">
+          Etiquette tips for every destination, ranked by the people who live there.
+        </p>
+      </section>
+
+      <CountryCarousel countries={countries} />
+
+      <section className="mx-auto max-w-5xl px-6 py-16 sm:py-24">
+        <h2 className="font-display text-3xl font-semibold mb-10">
+          How the ranking works
+        </h2>
+        <div className="grid gap-10 sm:grid-cols-3">
+          {principles.map((p) => (
+            <div key={p.title}>
+              <h3 className="font-display text-xl font-semibold mb-2">{p.title}</h3>
+              <p className="text-muted">{p.text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </>
   );
 }

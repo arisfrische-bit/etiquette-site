@@ -20,7 +20,7 @@ export default async function CountryPage({
 
   const { data } = await supabase
     .from("countries")
-    .select("name, tagline, items(id, text, position, score)")
+    .select("name, tagline, color, text_color, items(id, text, position, score)")
     .eq("slug", country)
     .order("score", { referencedTable: "items", ascending: false })
     .order("position", { referencedTable: "items" })
@@ -29,15 +29,30 @@ export default async function CountryPage({
   if (!data) notFound();
 
   return (
-    <main className="max-w-2xl mx-auto p-8">
-      <Link href="/" className="text-gray-400 hover:underline">
-        ← All countries
-      </Link>
+    <>
+      <section style={{ background: data.color, color: data.text_color }}>
+        <div className="mx-auto max-w-3xl px-6 py-12 sm:py-16">
+          <Link href="/" className="text-sm underline underline-offset-4">
+            All destinations
+          </Link>
+          <h1 className="font-display text-5xl sm:text-7xl font-semibold tracking-tight mt-6">
+            {data.name}
+          </h1>
+          <p className="mt-4 text-xl max-w-xl">{data.tagline}</p>
+        </div>
+      </section>
 
-      <h1 className="text-4xl font-bold mt-4 mb-2">{data.name}</h1>
-      <p className="text-lg text-gray-400 mb-8">{data.tagline}</p>
-
-      <ItemList items={data.items} />
-    </main>
+      <div className="mx-auto max-w-3xl px-6 py-10">
+        <p className="text-muted mb-8">
+          Ranked by verified local residents. Log in and verify your country to vote.
+        </p>
+        <ItemList
+          items={data.items}
+          countrySlug={country}
+          color={data.color}
+          textColor={data.text_color}
+        />
+      </div>
+    </>
   );
 }

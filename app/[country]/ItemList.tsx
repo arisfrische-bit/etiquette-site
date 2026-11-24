@@ -5,19 +5,30 @@ import { supabase } from "@/lib/supabase";
 
 type Item = { id: number; text: string; score: number };
 
-export default function ItemList({ items }: { items: Item[] }) {
+export default function ItemList({
+  items,
+  countrySlug,
+  color,
+  textColor,
+}: {
+  items: Item[];
+  countrySlug: string;
+  color: string;
+  textColor: string;
+}) {
+  const theme = { bg: color, fg: textColor };
   const [scores, setScores] = useState<Record<number, number>>(
     Object.fromEntries(items.map((i) => [i.id, i.score]))
   );
   const [myVotes, setMyVotes] = useState<Record<number, number>>({});
   const [signedIn, setSignedIn] = useState(false);
+  const [eligible, setEligible] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
     async function load() {
       const ids = items.map((i) => i.id);
 
-      // Fresh scores, because the page itself is built in advance
       const { data: fresh } = await supabase
         .from("items")
         .select("id, score")
@@ -26,10 +37,16 @@ export default function ItemList({ items }: { items: Item[] }) {
         setScores(Object.fromEntries(fresh.map((r) => [r.id, r.score])));
       }
 
-      // Is someone signed in? If so, what have they voted?
       const { data: auth } = await supabase.auth.getSession();
       setSignedIn(!!auth.session);
+
       if (auth.session) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("home_country, verified")
+          .maybeSingle();
+        setEligible(!!profile?.verified && profile.home_country === countrySlug);
+
         const { data: mine } = await supabase
           .from("votes")
           .select("item_id, value")
@@ -40,18 +57,23 @@ export default function ItemList({ items }: { items: Item[] }) {
       }
     }
     load();
-  }, [items]);
+  }, [items, countrySlug]);
 
   async function vote(itemId: number, value: 1 | -1) {
     if (!signedIn) {
-      setMessage("Please log in to vote.");
+      setMessage("Log in to vote.");
+      return;
+    }
+    if (!eligible) {
+      setMessage(
+        "Only verified residents of this country can vote. Set your country on your profile page."
+      );
       return;
     }
     setMessage("");
     const current = myVotes[itemId] ?? 0;
 
     if (current === value) {
-      // Clicking the same arrow again removes your vote
       const { error } = await supabase.from("votes").delete().eq("item_id", itemId);
       if (error) return setMessage(error.message);
       setMyVotes({ ...myVotes, [itemId]: 0 });
@@ -66,28 +88,41 @@ export default function ItemList({ items }: { items: Item[] }) {
     }
   }
 
+  const activeStyle = {
+    background: theme.bg,
+    color: theme.fg,
+    borderColor: theme.bg,
+  };
+  const buttonClass =
+    "h-10 w-10 rounded-full border border-line text-muted hover:border-ink hover:text-ink";
+
   return (
     <div>
-      <ol className="grid gap-3">
+      <ol className="divide-y divide-line border-y border-line">
         {items.map((item, i) => {
           const mine = myVotes[item.id] ?? 0;
           return (
-            <li key={item.id} className="border rounded-xl p-5 flex gap-4 items-center">
-              <span className="font-bold text-gray-400">{i + 1}</span>
-              <span className="flex-1">{item.text}</span>
-              <div className="flex flex-col items-center">
+            <li key={item.id} className="flex items-start gap-5 py-6">
+              <span className="font-display text-3xl font-semibold w-8 shrink-0 text-muted tabular-nums">
+                {i + 1}
+              </span>
+              <p className="flex-1 text-lg leading-relaxed">{item.text}</p>
+              <div className="flex flex-col gap-1">
                 <button
                   onClick={() => vote(item.id, 1)}
-                  className={mine === 1 ? "text-green-500" : "text-gray-400 hover:text-white"}
                   aria-label="Upvote"
+                  aria-pressed={mine === 1}
+                  className={buttonClass}
+                  style={mine === 1 ? activeStyle : undefined}
                 >
                   ▲
                 </button>
-                <span className="font-bold">{scores[item.id] ?? 0}</span>
                 <button
                   onClick={() => vote(item.id, -1)}
-                  className={mine === -1 ? "text-red-500" : "text-gray-400 hover:text-white"}
                   aria-label="Downvote"
+                  aria-pressed={mine === -1}
+                  className={buttonClass}
+                  style={mine === -1 ? activeStyle : undefined}
                 >
                   ▼
                 </button>
@@ -96,7 +131,16 @@ export default function ItemList({ items }: { items: Item[] }) {
           );
         })}
       </ol>
-      {message && <p className="mt-4 text-gray-400">{message}</p>}
+
+      {message && (
+        <p
+          role="status"
+          className="mt-6 border-l-4 pl-4 py-1"
+          style={{ borderColor: theme.bg }}
+        >
+          {message}
+        </p>
+      )}
     </div>
   );
 }
