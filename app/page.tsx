@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import CountryCarousel from "./CountryCarousel";
+import CountryShowcase from "./CountryShowcase";
 
 export const instant = false;
 
@@ -21,7 +21,7 @@ const principles = [
 export default async function Home() {
   const { data, error } = await supabase
     .from("countries")
-    .select("slug, name, teaser, color, text_color, region, featured")
+    .select("slug, name, teaser, color, text_color, featured")
     .order("id");
   if (error) throw new Error("Supabase error: " + error.message);
   const countries = data ?? [];
@@ -37,7 +37,7 @@ export default async function Home() {
         </p>
       </section>
 
-      <CountryCarousel countries={countries} />
+      <CountryShowcase countries={countries} />
 
       <section className="mx-auto max-w-5xl px-6 py-16 sm:py-24">
         <h2 className="font-display text-3xl font-semibold mb-10">

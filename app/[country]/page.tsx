@@ -43,9 +43,7 @@ export default async function CountryPage({
       </section>
 
       <div className="mx-auto max-w-3xl px-6 py-10">
-        <p className="text-muted mb-8">
-          Ranked by verified local residents. Log in and verify your country to vote.
-        </p>
+        <p className="text-muted mb-2">Ranked by verified local residents.</p>
         <ItemList
           items={data.items}
           countrySlug={country}

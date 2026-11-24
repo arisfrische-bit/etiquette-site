@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 type Item = { id: number; text: string; score: number };
@@ -21,6 +22,7 @@ export default function ItemList({
     Object.fromEntries(items.map((i) => [i.id, i.score]))
   );
   const [myVotes, setMyVotes] = useState<Record<number, number>>({});
+  const [loaded, setLoaded] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const [eligible, setEligible] = useState(false);
   const [message, setMessage] = useState("");
@@ -55,21 +57,13 @@ export default function ItemList({
           setMyVotes(Object.fromEntries(mine.map((v) => [v.item_id, v.value])));
         }
       }
+      setLoaded(true);
     }
     load();
   }, [items, countrySlug]);
 
   async function vote(itemId: number, value: 1 | -1) {
-    if (!signedIn) {
-      setMessage("Log in to vote.");
-      return;
-    }
-    if (!eligible) {
-      setMessage(
-        "Only verified residents of this country can vote. Set your country on your profile page."
-      );
-      return;
-    }
+    if (!signedIn || !eligible) return;
     setMessage("");
     const current = myVotes[itemId] ?? 0;
 
@@ -98,6 +92,30 @@ export default function ItemList({
 
   return (
     <div>
+      {loaded && (
+        <p className="text-muted mb-6" role="status">
+          {!signedIn && (
+            <>
+              Live here?{" "}
+              <Link href="/login" className="underline underline-offset-4">
+                Log in
+              </Link>{" "}
+              to vote.
+            </>
+          )}
+          {signedIn && !eligible && (
+            <>
+              Only verified residents of this country can vote. Check your status on{" "}
+              <Link href="/profile" className="underline underline-offset-4">
+                your profile
+              </Link>
+              .
+            </>
+          )}
+          {signedIn && eligible && "You are a verified resident. Vote on each tip."}
+        </p>
+      )}
+
       <ol className="divide-y divide-line border-y border-line">
         {items.map((item, i) => {
           const mine = myVotes[item.id] ?? 0;
@@ -107,26 +125,29 @@ export default function ItemList({
                 {i + 1}
               </span>
               <p className="flex-1 text-lg leading-relaxed">{item.text}</p>
-              <div className="flex flex-col gap-1">
-                <button
-                  onClick={() => vote(item.id, 1)}
-                  aria-label="Upvote"
-                  aria-pressed={mine === 1}
-                  className={buttonClass}
-                  style={mine === 1 ? activeStyle : undefined}
-                >
-                  ▲
-                </button>
-                <button
-                  onClick={() => vote(item.id, -1)}
-                  aria-label="Downvote"
-                  aria-pressed={mine === -1}
-                  className={buttonClass}
-                  style={mine === -1 ? activeStyle : undefined}
-                >
-                  ▼
-                </button>
-              </div>
+
+              {eligible && (
+                <div className="flex flex-col gap-1">
+                  <button
+                    onClick={() => vote(item.id, 1)}
+                    aria-label="Upvote"
+                    aria-pressed={mine === 1}
+                    className={buttonClass}
+                    style={mine === 1 ? activeStyle : undefined}
+                  >
+                    ▲
+                  </button>
+                  <button
+                    onClick={() => vote(item.id, -1)}
+                    aria-label="Downvote"
+                    aria-pressed={mine === -1}
+                    className={buttonClass}
+                    style={mine === -1 ? activeStyle : undefined}
+                  >
+                    ▼
+                  </button>
+                </div>
+              )}
             </li>
           );
         })}

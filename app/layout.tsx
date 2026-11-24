@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Bricolage_Grotesque, Literata } from "next/font/google";
 import Link from "next/link";
 import { SITE_NAME } from "@/lib/site";
+import SearchBox from "./SearchBox";
+import AuthNav from "./AuthNav";
 import "./globals.css";
 
 const display = Bricolage_Grotesque({
@@ -30,18 +32,17 @@ export default function RootLayout({
         className={`${display.variable} ${body.variable} antialiased min-h-screen flex flex-col`}
       >
         <header className="border-b border-line">
-          <div className="mx-auto max-w-5xl px-6 h-16 flex items-center justify-between">
-            <Link href="/" className="font-display text-xl font-semibold">
+          <div className="mx-auto max-w-5xl px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+            <Link
+              href="/"
+              className="order-1 font-display text-xl font-semibold"
+            >
               {SITE_NAME}
             </Link>
-            <nav className="flex gap-6 text-sm">
-              <Link href="/profile" className="underline-offset-4 hover:underline">
-                Profile
-              </Link>
-              <Link href="/login" className="underline-offset-4 hover:underline">
-                Log in
-              </Link>
-            </nav>
+
+            <AuthNav />
+
+            <SearchBox className="order-3 w-full sm:order-2 sm:ml-auto sm:w-64" />
           </div>
         </header>
 
