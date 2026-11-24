@@ -25,6 +25,9 @@ export default function Home() {
           </Link>
         ))}
       </div>
+    <Link href="/login" className="block mt-8 text-gray-400 hover:underline">
+      Log in or sign up
+    </Link>
     </main>
   );
 }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import ItemList from "./ItemList";
 
 export const instant = false;
 
@@ -19,8 +20,9 @@ export default async function CountryPage({
 
   const { data } = await supabase
     .from("countries")
-    .select("name, tagline, items(id, text, position)")
+    .select("name, tagline, items(id, text, position, score)")
     .eq("slug", country)
+    .order("score", { referencedTable: "items", ascending: false })
     .order("position", { referencedTable: "items" })
     .single();
 
@@ -35,14 +37,7 @@ export default async function CountryPage({
       <h1 className="text-4xl font-bold mt-4 mb-2">{data.name}</h1>
       <p className="text-lg text-gray-400 mb-8">{data.tagline}</p>
 
-      <ol className="grid gap-3">
-        {data.items.map((item: { id: number; text: string }, i: number) => (
-          <li key={item.id} className="border rounded-xl p-5 flex gap-4">
-            <span className="font-bold text-gray-400">{i + 1}</span>
-            <span>{item.text}</span>
-          </li>
-        ))}
-      </ol>
+      <ItemList items={data.items} />
     </main>
   );
 }
