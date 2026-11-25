@@ -1,7 +1,11 @@
 import { supabase } from "@/lib/supabase";
 import CountryShowcase from "./CountryShowcase";
+import Link from "next/link";
 
 export const instant = false;
+
+// The most countries the homepage rotation will show
+const MAX_SLIDES = 5;
 
 const principles = [
   {
@@ -18,31 +22,56 @@ const principles = [
   },
 ];
 
-type Tip = { text: string; score: number; position: number };
+type Tip = { text: string; score: number; position: number; vote_count: number };
 
 export default async function Home() {
   const { data, error } = await supabase
     .from("countries")
     .select(
-      "slug, name, teaser, color, text_color, featured, items(text, score, position)"
+      "id, slug, name, teaser, color, text_color, featured, items(text, score, position, vote_count)"
     )
     .order("id");
   if (error) throw new Error("Supabase error: " + error.message);
 
-  // For each country, use its top-voted tip (ties: earlier position wins)
-  const countries = (data ?? []).map((c) => {
-    const top = [...(c.items as Tip[])].sort(
+  const all = (data ?? []).map((c) => {
+    const tips = c.items as Tip[];
+
+    // The top-voted tip (ties: earlier position wins)
+    const top = [...tips].sort(
       (a, b) => b.score - a.score || a.position - b.position
     )[0];
+
     return {
+      id: c.id,
       slug: c.slug,
       name: c.name,
       color: c.color,
       text_color: c.text_color,
       featured: c.featured,
       teaser: top?.text ?? c.teaser,
+      votes: tips.reduce((sum, t) => sum + t.vote_count, 0),
     };
   });
+
+  // Most voted first (ties: earlier country first)
+  const ranked = [...all].sort((a, b) => b.votes - a.votes || a.id - b.id);
+
+  // Only featured countries compete, and only the top few are kept
+  const chosen = new Set(
+    ranked
+      .filter((c) => c.featured)
+      .slice(0, MAX_SLIDES)
+      .map((c) => c.slug)
+  );
+
+  const countries = ranked.map((c) => ({
+    slug: c.slug,
+    name: c.name,
+    color: c.color,
+    text_color: c.text_color,
+    teaser: c.teaser,
+    featured: chosen.has(c.slug),
+  }));
 
   return (
     <>
@@ -61,7 +90,7 @@ export default async function Home() {
         <h2 className="font-display text-3xl font-semibold mb-10">
           How the ranking works
         </h2>
-        <div className="grid gap-10 sm:grid-cols-3">
+                <div className="grid gap-10 sm:grid-cols-3">
           {principles.map((p) => (
             <div key={p.title}>
               <h3 className="font-display text-xl font-semibold mb-2">{p.title}</h3>
@@ -69,6 +98,12 @@ export default async function Home() {
             </div>
           ))}
         </div>
+
+        <p className="mt-10">
+          <Link href="/about" className="underline underline-offset-4">
+            Read how we verify locals
+          </Link>
+        </p>
       </section>
     </>
   );

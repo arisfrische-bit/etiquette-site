@@ -48,9 +48,14 @@ export default function RootLayout({
 
         <main className="flex-1">{children}</main>
 
-        <footer className="border-t border-line text-sm text-muted">
-          <div className="mx-auto max-w-5xl px-6 py-8">
-            Tips begin as drafts and are ranked by verified local residents.
+                <footer className="border-t border-line text-sm text-muted">
+          <div className="mx-auto max-w-5xl px-6 py-8 flex flex-wrap items-center justify-between gap-4">
+            <p>Tips begin as drafts and are ranked by verified local residents.</p>
+            <nav className="flex gap-6">
+              <Link href="/about" className="underline-offset-4 hover:underline">
+                About
+              </Link>
+            </nav>
           </div>
         </footer>
       </body>
