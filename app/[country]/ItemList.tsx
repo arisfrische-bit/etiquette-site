@@ -1,19 +1,51 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 type Item = { id: number; text: string; score: number };
 
+type Status = "out" | "no-country" | "pending" | "other" | "verified";
+
+function Thumb({ down = false }: { down?: boolean }) {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {down ? (
+        <>
+          <path d="M17 14V2" />
+          <path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z" />
+        </>
+      ) : (
+        <>
+          <path d="M7 10v12" />
+          <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
+        </>
+      )}
+    </svg>
+  );
+}
+
 export default function ItemList({
   items,
   countrySlug,
+  countryName,
   color,
   textColor,
 }: {
   items: Item[];
   countrySlug: string;
+  countryName: string;
   color: string;
   textColor: string;
 }) {
@@ -23,47 +55,86 @@ export default function ItemList({
   );
   const [myVotes, setMyVotes] = useState<Record<number, number>>({});
   const [loaded, setLoaded] = useState(false);
-  const [signedIn, setSignedIn] = useState(false);
-  const [eligible, setEligible] = useState(false);
+  const [status, setStatus] = useState<Status>("out");
   const [message, setMessage] = useState("");
+  const runRef = useRef(0);
 
   useEffect(() => {
+    const ids = items.map((i) => i.id);
+
     async function load() {
-      const ids = items.map((i) => i.id);
+      // If a newer check starts while this one is running, this one is ignored
+      const run = ++runRef.current;
+      const stale = () => run !== runRef.current;
 
       const { data: fresh } = await supabase
         .from("items")
         .select("id, score")
         .in("id", ids);
+      if (stale()) return;
       if (fresh) {
         setScores(Object.fromEntries(fresh.map((r) => [r.id, r.score])));
       }
 
       const { data: auth } = await supabase.auth.getSession();
-      setSignedIn(!!auth.session);
+      if (stale()) return;
 
-      if (auth.session) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("home_country, verified")
-          .maybeSingle();
-        setEligible(!!profile?.verified && profile.home_country === countrySlug);
+      // Nobody logged in: clear everything
+      if (!auth.session) {
+        setStatus("out");
+        setMyVotes({});
+        setLoaded(true);
+        return;
+      }
 
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("home_country, verified")
+        .maybeSingle();
+      if (stale()) return;
+
+      let next: Status;
+      if (!profile?.home_country) next = "no-country";
+      else if (profile.home_country !== countrySlug) next = "other";
+      else if (!profile.verified) next = "pending";
+      else next = "verified";
+
+      let votes: Record<number, number> = {};
+      if (next === "verified") {
         const { data: mine } = await supabase
           .from("votes")
           .select("item_id, value")
           .in("item_id", ids);
+        if (stale()) return;
         if (mine) {
-          setMyVotes(Object.fromEntries(mine.map((v) => [v.item_id, v.value])));
+          votes = Object.fromEntries(mine.map((v) => [v.item_id, v.value]));
         }
       }
+
+      setStatus(next);
+      setMyVotes(votes);
       setLoaded(true);
     }
+
     load();
+
+    // Re-check whenever someone logs in or out
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
+        setTimeout(load, 0);
+      }
+    });
+
+    return () => {
+      runRef.current++;
+      sub.subscription.unsubscribe();
+    };
   }, [items, countrySlug]);
 
+  const canVote = status === "verified";
+
   async function vote(itemId: number, value: 1 | -1) {
-    if (!signedIn || !eligible) return;
+    if (!canVote) return;
     setMessage("");
     const current = myVotes[itemId] ?? 0;
 
@@ -88,66 +159,96 @@ export default function ItemList({
     borderColor: theme.bg,
   };
   const buttonClass =
-    "h-10 w-10 rounded-full border border-line text-muted hover:border-ink hover:text-ink";
+    "flex h-10 w-10 items-center justify-center rounded-full border border-line text-muted hover:border-ink hover:text-ink";
+  const linkClass = "underline underline-offset-4";
 
   return (
     <div>
-      {loaded && (
+        {loaded && (
         <p className="text-muted mb-6" role="status">
-          {!signedIn && (
+          {status === "out" && (
             <>
-              Live here?{" "}
-              <Link href="/login" className="underline underline-offset-4">
+              Live here?
+              <br />
+              <Link href="/login" className={linkClass}>
                 Log in
               </Link>{" "}
               to vote.
             </>
           )}
-          {signedIn && !eligible && (
+          {status === "no-country" && (
             <>
-              Only verified residents of this country can vote. Check your status on{" "}
-              <Link href="/profile" className="underline underline-offset-4">
-                your profile
+              Tell us which country you live in.
+              <br />
+              <Link href="/profile" className={linkClass}>
+                Set your country
+              </Link>{" "}
+              to vote.
+            </>
+          )}
+          {status === "pending" && (
+            <>
+              We are still checking that you live in {countryName}.
+              <br />
+              You can vote once you are verified.
+            </>
+          )}
+          {status === "other" && (
+            <>
+              Voting here is for people who live in {countryName}.
+              <br />
+              Your profile lists a different country.{" "}
+              <Link href="/profile" className={linkClass}>
+                Update your profile
               </Link>
               .
             </>
           )}
-          {signedIn && eligible && "You are a verified resident. Vote on each tip."}
+          {status === "verified" && (
+            <>
+              You are a verified resident of {countryName}.
+              <br />
+              Vote on each tip.
+            </>
+          )}
         </p>
       )}
 
       <ol className="divide-y divide-line border-y border-line">
         {items.map((item, i) => {
-          const mine = myVotes[item.id] ?? 0;
+          const mine = canVote ? myVotes[item.id] ?? 0 : 0;
           return (
             <li key={item.id} className="flex items-start gap-5 py-6">
               <span className="font-display text-3xl font-semibold w-8 shrink-0 text-muted tabular-nums">
                 {i + 1}
               </span>
-              <p className="flex-1 text-lg leading-relaxed">{item.text}</p>
 
-              {eligible && (
-                <div className="flex flex-col gap-1">
-                  <button
-                    onClick={() => vote(item.id, 1)}
-                    aria-label="Upvote"
-                    aria-pressed={mine === 1}
-                    className={buttonClass}
-                    style={mine === 1 ? activeStyle : undefined}
-                  >
-                    ▲
-                  </button>
-                  <button
-                    onClick={() => vote(item.id, -1)}
-                    aria-label="Downvote"
-                    aria-pressed={mine === -1}
-                    className={buttonClass}
-                    style={mine === -1 ? activeStyle : undefined}
-                  >
-                    ▼
-                  </button>
-                </div>
-              )}
+              <div className="flex flex-1 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <p className="text-lg leading-relaxed">{item.text}</p>
+
+                {canVote && (
+                  <div className="flex shrink-0 gap-2">
+                    <button
+                      onClick={() => vote(item.id, 1)}
+                      aria-label="Thumbs up"
+                      aria-pressed={mine === 1}
+                      className={buttonClass}
+                      style={mine === 1 ? activeStyle : undefined}
+                    >
+                      <Thumb />
+                    </button>
+                    <button
+                      onClick={() => vote(item.id, -1)}
+                      aria-label="Thumbs down"
+                      aria-pressed={mine === -1}
+                      className={buttonClass}
+                      style={mine === -1 ? activeStyle : undefined}
+                    >
+                      <Thumb down />
+                    </button>
+                  </div>
+                )}
+              </div>
             </li>
           );
         })}

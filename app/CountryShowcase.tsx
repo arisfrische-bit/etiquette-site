@@ -57,14 +57,14 @@ export default function CountryShowcase({ countries }: { countries: Country[] })
       className="transition-colors duration-700 motion-reduce:transition-none"
     >
       <div className="mx-auto max-w-5xl px-6 py-12 sm:py-16 min-h-[22rem] sm:min-h-[26rem] flex flex-col justify-between gap-10">
-        <div key={c.slug} className="slide-in" aria-live={playing ? "off" : "polite"}>
-          <Link href={`/${c.slug}`} className="block">
-            <h2 className="font-display text-6xl sm:text-8xl font-semibold tracking-tight">
-              {c.name}
+          <div key={c.slug} className="slide-in" aria-live={playing ? "off" : "polite"}>
+                    <Link href={`/${c.slug}`} className="block w-full max-w-3xl">
+            <h2 className="font-display text-5xl sm:text-7xl font-semibold tracking-tight leading-[1.05] h-[2.1em] flex items-end">
+              <span className="line-clamp-2">{c.name}</span>
             </h2>
-            {c.teaser && (
-              <p className="mt-4 text-xl sm:text-2xl max-w-xl">{c.teaser}</p>
-            )}
+            <p className="mt-4 h-[5.25rem] sm:h-24 text-xl sm:text-2xl line-clamp-3">
+              {c.teaser}
+            </p>
             <span className="mt-6 inline-block text-lg underline underline-offset-4">
               Read the tips
             </span>

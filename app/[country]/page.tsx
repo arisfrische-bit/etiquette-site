@@ -47,6 +47,7 @@ export default async function CountryPage({
         <ItemList
           items={data.items}
           countrySlug={country}
+          countryName={data.name}
           color={data.color}
           textColor={data.text_color}
         />

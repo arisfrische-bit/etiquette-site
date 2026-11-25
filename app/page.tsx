@@ -18,13 +18,31 @@ const principles = [
   },
 ];
 
+type Tip = { text: string; score: number; position: number };
+
 export default async function Home() {
   const { data, error } = await supabase
     .from("countries")
-    .select("slug, name, teaser, color, text_color, featured")
+    .select(
+      "slug, name, teaser, color, text_color, featured, items(text, score, position)"
+    )
     .order("id");
   if (error) throw new Error("Supabase error: " + error.message);
-  const countries = data ?? [];
+
+  // For each country, use its top-voted tip (ties: earlier position wins)
+  const countries = (data ?? []).map((c) => {
+    const top = [...(c.items as Tip[])].sort(
+      (a, b) => b.score - a.score || a.position - b.position
+    )[0];
+    return {
+      slug: c.slug,
+      name: c.name,
+      color: c.color,
+      text_color: c.text_color,
+      featured: c.featured,
+      teaser: top?.text ?? c.teaser,
+    };
+  });
 
   return (
     <>
