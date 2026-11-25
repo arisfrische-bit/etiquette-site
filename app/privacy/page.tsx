@@ -1,0 +1,108 @@
+import type { Metadata } from "next";
+import { SITE_NAME, CONTACT_EMAIL } from "@/lib/site";
+
+export const metadata: Metadata = {
+  title: `Privacy: ${SITE_NAME}`,
+  description: "What information we collect, why, and how to have it deleted.",
+};
+
+const h2 = "font-display text-2xl font-semibold mt-12 mb-3";
+
+export default function PrivacyPage() {
+  return (
+    <div className="mx-auto max-w-2xl px-6 py-16 sm:py-24">
+      <h1 className="font-display text-5xl sm:text-6xl font-semibold tracking-tight">
+        Privacy
+      </h1>
+      <p className="mt-4 text-muted">Last updated: 25 November 2026</p>
+      <p className="mt-6 text-xl">
+        We collect as little as we can. You can read every tip on {SITE_NAME} without
+        an account. This page explains what we keep when you create one.
+      </p>
+
+      <h2 className={h2}>What we collect</h2>
+      <ul className="list-disc pl-6 grid gap-2">
+        <li>
+          <strong>Your email address and password.</strong> The password is stored in a
+          scrambled form that we cannot read.
+        </li>
+        <li>
+          <strong>The country you say you live in,</strong> and whether we have
+          verified it.
+        </li>
+        <li>
+          <strong>Your votes</strong> on tips.
+        </li>
+      </ul>
+      <p className="mt-4">
+        If you only browse, we do not ask you for anything. Our servers may record
+        basic technical information, such as your IP address, as part of normal
+        operation.
+      </p>
+
+      <h2 className={h2}>Why we collect it</h2>
+      <ul className="list-disc pl-6 grid gap-2">
+        <li>Your email lets you log in and lets us contact you about your account.</li>
+        <li>
+          Your country and verification status decide which tips you can vote on.
+        </li>
+        <li>Your votes decide the order of the tips.</li>
+      </ul>
+
+      <h2 className={h2}>What other people can see</h2>
+      <p>
+        Your email, country and individual votes are private. Other visitors see only
+        the final order of the tips, never who voted for what.
+      </p>
+
+      <h2 className={h2}>Who handles your data</h2>
+      <p>
+        We use two services to run the site. Supabase stores our database, including
+        accounts, and Vercel hosts the website. They process data on our behalf, and
+        they may store it in data centers outside your country. We do not sell your
+        information, and we do not show advertising.
+      </p>
+
+      <h2 className={h2}>Cookies and browser storage</h2>
+      <p>
+        We use browser storage only to keep you logged in. We do not use tracking
+        cookies.
+      </p>
+
+      <h2 className={h2}>Your choices</h2>
+      <p>
+        You can see and change your country on your profile page. To delete your
+        account, email us. We will delete your account, your profile and your votes.
+        You can also ask for a copy of the information we hold about you, or ask us to
+        correct it.
+      </p>
+
+      <h2 className={h2}>How long we keep it</h2>
+      <p>
+        We keep your information for as long as your account exists. When we delete
+        the account, the profile and votes go with it.
+      </p>
+
+      <h2 className={h2}>Children</h2>
+      <p>
+        {SITE_NAME} is not meant for children under 16, and we do not knowingly
+        collect their information.
+      </p>
+
+      <h2 className={h2}>Changes</h2>
+      <p>
+        If we change how we handle your information, we will update this page and
+        change the date at the top.
+      </p>
+
+      <h2 className={h2}>Contact</h2>
+      <p>
+        Questions or deletion requests:{" "}
+        <a href={`mailto:${CONTACT_EMAIL}`} className="underline underline-offset-4">
+          {CONTACT_EMAIL}
+        </a>
+        .
+      </p>
+    </div>
+  );
+}

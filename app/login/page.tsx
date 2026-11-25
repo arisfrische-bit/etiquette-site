@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -218,6 +219,17 @@ export default function LoginPage() {
         >
           {busy ? "Please wait" : mode === "login" ? "Log in" : "Create account"}
         </button>
+                {mode === "signup" && (
+          <p className="text-sm text-muted">
+            By creating an account, you agree to how we handle your information, as
+            described in our{" "}
+            <Link href="/privacy" className="underline underline-offset-4">
+              privacy page
+            </Link>
+            .
+          </p>
+        )}
+
       </form>
     </div>
   );

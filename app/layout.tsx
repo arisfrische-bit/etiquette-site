@@ -51,9 +51,12 @@ export default function RootLayout({
                 <footer className="border-t border-line text-sm text-muted">
           <div className="mx-auto max-w-5xl px-6 py-8 flex flex-wrap items-center justify-between gap-4">
             <p>Tips begin as drafts and are ranked by verified local residents.</p>
-            <nav className="flex gap-6">
+                        <nav className="flex gap-6">
               <Link href="/about" className="underline-offset-4 hover:underline">
                 About
+              </Link>
+              <Link href="/privacy" className="underline-offset-4 hover:underline">
+                Privacy
               </Link>
             </nav>
           </div>
