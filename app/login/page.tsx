@@ -1,19 +1,25 @@
 "use client";
-import Link from "next/link";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { supabase } from "@/lib/supabase";
+import { CONTACT_EMAIL } from "@/lib/site";
 
 type Mode = "login" | "signup";
+
+const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
 function friendly(message: string) {
   const m = message.toLowerCase();
   if (m.includes("invalid login")) return "Email or password is incorrect.";
   if (m.includes("already registered"))
     return "An account with this email already exists. Try logging in.";
-  if (m.includes("password") && m.includes("6"))
-    return "Use a password with at least 6 characters.";
+  if (m.includes("password") && m.includes("characters"))
+    return "Use a password with at least 8 characters.";
+  if (m.includes("captcha"))
+    return "The security check failed. Please try again.";
   if (m.includes("rate limit"))
     return "Too many attempts. Wait a few minutes and try again.";
   return message;
@@ -21,11 +27,13 @@ function friendly(message: string) {
 
 export default function LoginPage() {
   const router = useRouter();
+  const turnstileRef = useRef<TurnstileInstance>(null);
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [country, setCountry] = useState("");
   const [countries, setCountries] = useState<{ slug: string; name: string }[]>([]);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -55,6 +63,12 @@ export default function LoginPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // A security token works only once, so get a fresh one after each attempt
+  function resetCaptcha() {
+    turnstileRef.current?.reset();
+    setCaptchaToken(null);
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -62,10 +76,15 @@ export default function LoginPage() {
     setBusy(true);
 
     if (mode === "login") {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+        options: { captchaToken: captchaToken ?? undefined },
+      });
       if (error) {
         setError(friendly(error.message));
         setBusy(false);
+        resetCaptcha();
         return;
       }
       goHome();
@@ -73,16 +92,23 @@ export default function LoginPage() {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { home_country: country } },
+        options: {
+          data: { home_country: country },
+          captchaToken: captchaToken ?? undefined,
+        },
       });
       if (error) {
         setError(friendly(error.message));
         setBusy(false);
+        resetCaptcha();
         return;
       }
       if (!data.session) {
-        setInfo("Check your email to confirm your account, then log in.");
+        setInfo(
+          `Check your email to confirm your account, then log in. Nothing after a few minutes? Check your spam folder, or write to ${CONTACT_EMAIL}.`
+        );
         setBusy(false);
+        resetCaptcha();
         return;
       }
       goHome();
@@ -157,7 +183,7 @@ export default function LoginPage() {
               id="password"
               type={showPassword ? "text" : "password"}
               required
-              minLength={6}
+              minLength={8}
               autoComplete={mode === "login" ? "current-password" : "new-password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -172,7 +198,7 @@ export default function LoginPage() {
             </button>
           </div>
           {mode === "signup" && (
-            <p className="mt-1 text-sm text-muted">At least 6 characters.</p>
+            <p className="mt-1 text-sm text-muted">At least 8 characters.</p>
           )}
         </div>
 
@@ -201,6 +227,17 @@ export default function LoginPage() {
           </div>
         )}
 
+        {SITE_KEY && (
+          <Turnstile
+            ref={turnstileRef}
+            siteKey={SITE_KEY}
+            onSuccess={setCaptchaToken}
+            onExpire={() => setCaptchaToken(null)}
+            onError={() => setCaptchaToken(null)}
+            options={{ theme: "light" }}
+          />
+        )}
+
         {error && (
           <p role="alert" className="border-l-4 border-[#B3261E] py-1 pl-4">
             {error}
@@ -214,12 +251,13 @@ export default function LoginPage() {
 
         <button
           type="submit"
-          disabled={busy}
+          disabled={busy || (!!SITE_KEY && !captchaToken)}
           className="w-full rounded-full bg-ink px-6 py-3 font-medium text-paper disabled:opacity-50"
         >
           {busy ? "Please wait" : mode === "login" ? "Log in" : "Create account"}
         </button>
-                {mode === "signup" && (
+
+        {mode === "signup" && (
           <p className="text-sm text-muted">
             By creating an account, you agree to how we handle your information, as
             described in our{" "}
@@ -229,7 +267,6 @@ export default function LoginPage() {
             .
           </p>
         )}
-
       </form>
     </div>
   );
