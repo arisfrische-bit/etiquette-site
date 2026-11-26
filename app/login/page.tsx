@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { supabase } from "@/lib/supabase";
-import { CONTACT_EMAIL } from "@/lib/site";
+import { CONTACT_EMAIL, PASSWORD_MIN_LENGTH } from "@/lib/site";
 
 type Mode = "login" | "signup";
 
@@ -183,7 +183,7 @@ export default function LoginPage() {
               id="password"
               type={showPassword ? "text" : "password"}
               required
-              minLength={8}
+                            minLength={mode === "signup" ? PASSWORD_MIN_LENGTH : undefined}
               autoComplete={mode === "login" ? "current-password" : "new-password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -197,8 +197,10 @@ export default function LoginPage() {
               {showPassword ? "Hide" : "Show"}
             </button>
           </div>
-          {mode === "signup" && (
-            <p className="mt-1 text-sm text-muted">At least 8 characters.</p>
+                    {mode === "signup" && (
+            <p className="mt-1 text-sm text-muted">
+              At least {PASSWORD_MIN_LENGTH} characters.
+            </p>
           )}
         </div>
 
