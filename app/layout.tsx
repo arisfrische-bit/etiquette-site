@@ -19,6 +19,7 @@ export const metadata: Metadata = {
   title: `${SITE_NAME}: What Locals Really Appreciate`,
   description:
     "Etiquette tips for Japan, Spain and the UK, ranked by the people who live there.",
+  robots: { index: false, follow: false },
 };
 
 export default function RootLayout({
