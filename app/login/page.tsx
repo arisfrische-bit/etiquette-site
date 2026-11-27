@@ -17,8 +17,6 @@ function friendly(message: string) {
   if (m.includes("invalid login")) return "Email or password is incorrect.";
   if (m.includes("already registered"))
     return "An account with this email already exists. Try logging in.";
-  if (m.includes("password") && m.includes("characters"))
-    return "Use a password with at least 8 characters.";
   if (m.includes("captcha"))
     return "The security check failed. Please try again.";
   if (m.includes("rate limit"))
@@ -35,15 +33,15 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [country, setCountry] = useState("");
+  const [otherCountry, setOtherCountry] = useState("");
   const [countries, setCountries] = useState<{ slug: string; name: string }[]>([]);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
-  const [checking, setChecking] = useState(true);
   const [sentTo, setSentTo] = useState<string | null>(null);
-  const [otherCountry, setOtherCountry] = useState("");
+  const [checking, setChecking] = useState(true);
 
   function goHome() {
     router.replace("/");
@@ -98,10 +96,11 @@ export default function LoginPage() {
         email,
         password,
         options: {
-            data: {
+          data: {
             home_country: country === OTHER ? "" : country,
             requested_country: country === OTHER ? otherCountry : "",
           },
+          captchaToken: captchaToken ?? undefined,
         },
       });
       if (error) {
@@ -224,7 +223,7 @@ export default function LoginPage() {
               id="password"
               type={showPassword ? "text" : "password"}
               required
-                            minLength={mode === "signup" ? PASSWORD_MIN_LENGTH : undefined}
+              minLength={mode === "signup" ? PASSWORD_MIN_LENGTH : undefined}
               autoComplete={mode === "login" ? "current-password" : "new-password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -238,14 +237,14 @@ export default function LoginPage() {
               {showPassword ? "Hide" : "Show"}
             </button>
           </div>
-                    {mode === "signup" && (
+          {mode === "signup" && (
             <p className="mt-1 text-sm text-muted">
               At least {PASSWORD_MIN_LENGTH} characters.
             </p>
           )}
         </div>
 
-          {mode === "signup" && (
+        {mode === "signup" && (
           <div>
             <label htmlFor="country" className="mb-1 block text-sm font-medium">
               Country you live in
@@ -268,7 +267,10 @@ export default function LoginPage() {
 
             {country === OTHER ? (
               <div className="mt-4">
-                <label htmlFor="other-country" className="mb-1 block text-sm font-medium">
+                <label
+                  htmlFor="other-country"
+                  className="mb-1 block text-sm font-medium"
+                >
                   Which country?
                 </label>
                 <input
@@ -281,8 +283,8 @@ export default function LoginPage() {
                   className="w-full rounded-xl border border-line bg-white px-4 py-3"
                 />
                 <p className="mt-1 text-sm text-muted">
-                  You can still read every tip. We add countries based on requests, and
-                  we will note yours.
+                  You can still read every tip. We add countries based on requests,
+                  and we will note yours.
                 </p>
               </div>
             ) : (
@@ -300,7 +302,7 @@ export default function LoginPage() {
             onSuccess={setCaptchaToken}
             onExpire={() => setCaptchaToken(null)}
             onError={() => setCaptchaToken(null)}
-            options={{ theme: "light" }}
+            options={{ theme: "light", appearance: "interaction-only" }}
           />
         )}
 
