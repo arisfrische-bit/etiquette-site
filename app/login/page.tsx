@@ -10,6 +10,7 @@ import { CONTACT_EMAIL, PASSWORD_MIN_LENGTH } from "@/lib/site";
 type Mode = "login" | "signup";
 
 const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+const OTHER = "__other";
 
 function friendly(message: string) {
   const m = message.toLowerCase();
@@ -42,6 +43,7 @@ export default function LoginPage() {
   const [info, setInfo] = useState("");
   const [checking, setChecking] = useState(true);
   const [sentTo, setSentTo] = useState<string | null>(null);
+  const [otherCountry, setOtherCountry] = useState("");
 
   function goHome() {
     router.replace("/");
@@ -96,8 +98,10 @@ export default function LoginPage() {
         email,
         password,
         options: {
-          data: { home_country: country },
-          captchaToken: captchaToken ?? undefined,
+            data: {
+            home_country: country === OTHER ? "" : country,
+            requested_country: country === OTHER ? otherCountry : "",
+          },
         },
       });
       if (error) {
@@ -241,7 +245,7 @@ export default function LoginPage() {
           )}
         </div>
 
-        {mode === "signup" && (
+                {mode === "signup" && (
           <div>
             <label htmlFor="country" className="mb-1 block text-sm font-medium">
               Country you live in
@@ -259,10 +263,33 @@ export default function LoginPage() {
                   {c.name}
                 </option>
               ))}
+              <option value={OTHER}>My country is not listed</option>
             </select>
-            <p className="mt-1 text-sm text-muted">
-              We check your country before you can vote on its tips.
-            </p>
+
+            {country === OTHER ? (
+              <div className="mt-4">
+                <label htmlFor="other-country" className="mb-1 block text-sm font-medium">
+                  Which country?
+                </label>
+                <input
+                  id="other-country"
+                  type="text"
+                  required
+                  maxLength={60}
+                  value={otherCountry}
+                  onChange={(e) => setOtherCountry(e.target.value)}
+                  className="w-full rounded-xl border border-line bg-white px-4 py-3"
+                />
+                <p className="mt-1 text-sm text-muted">
+                  You can still read every tip. We add countries based on requests, and
+                  we will note yours.
+                </p>
+              </div>
+            ) : (
+              <p className="mt-1 text-sm text-muted">
+                We check your country before you can vote on its tips.
+              </p>
+            )}
           </div>
         )}
 
