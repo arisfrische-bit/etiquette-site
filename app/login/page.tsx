@@ -22,6 +22,8 @@ function friendly(message: string) {
     return "The security check failed. Please try again.";
   if (m.includes("rate limit"))
     return "Too many attempts. Wait a few minutes and try again.";
+  if (m.includes("not confirmed"))
+    return "Please confirm your email first. Check your inbox, and your spam folder.";
   return message;
 }
 
@@ -39,6 +41,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [checking, setChecking] = useState(true);
+  const [sentTo, setSentTo] = useState<string | null>(null);
 
   function goHome() {
     router.replace("/");
@@ -104,9 +107,7 @@ export default function LoginPage() {
         return;
       }
       if (!data.session) {
-        setInfo(
-          `Check your email to confirm your account, then log in. Nothing after a few minutes? Check your spam folder, or write to ${CONTACT_EMAIL}.`
-        );
+        setSentTo(email);
         setBusy(false);
         resetCaptcha();
         return;
@@ -122,6 +123,42 @@ export default function LoginPage() {
   }
 
   if (checking) return <div className="min-h-[24rem]" />;
+
+  if (sentTo) {
+    return (
+      <div className="mx-auto max-w-md px-6 py-16">
+        <h1 className="font-display text-4xl font-semibold tracking-tight">
+          Check your email
+        </h1>
+        <p className="mt-4 text-lg">
+          We have sent a message to <strong>{sentTo}</strong>. Open it and click the
+          link to confirm your account.
+        </p>
+        <p className="mt-4 text-muted">
+          Nothing after a few minutes? Check your spam folder, or write to{" "}
+          {CONTACT_EMAIL}. If you already have an account with this address, log in
+          instead.
+        </p>
+        <div className="mt-8 flex flex-wrap gap-6">
+          <button
+            onClick={() => {
+              setSentTo(null);
+              setMode("login");
+            }}
+            className="underline underline-offset-4"
+          >
+            Go to log in
+          </button>
+          <button
+            onClick={() => setSentTo(null)}
+            className="underline underline-offset-4"
+          >
+            Use a different email
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const tabClass = (active: boolean) =>
     `pb-3 -mb-px border-b-2 font-medium ${
