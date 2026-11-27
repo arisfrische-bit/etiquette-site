@@ -245,7 +245,7 @@ export default function LoginPage() {
           )}
         </div>
 
-                {mode === "signup" && (
+          {mode === "signup" && (
           <div>
             <label htmlFor="country" className="mb-1 block text-sm font-medium">
               Country you live in

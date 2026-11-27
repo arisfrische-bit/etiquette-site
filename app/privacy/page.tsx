@@ -105,3 +105,13 @@ export default function PrivacyPage() {
       </p>
 
       <h2 className={h2}>Contact</h2>
+      <p>
+        Questions or deletion requests:{" "}
+        <a href={`mailto:${CONTACT_EMAIL}`} className="underline underline-offset-4">
+          {CONTACT_EMAIL}
+        </a>
+        .
+      </p>
+    </div>
+  );
+}
