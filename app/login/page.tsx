@@ -237,9 +237,11 @@ export default function LoginPage() {
               {showPassword ? "Hide" : "Show"}
             </button>
           </div>
-          {mode === "signup" && (
-            <p className="mt-1 text-sm text-muted">
-              At least {PASSWORD_MIN_LENGTH} characters.
+          {mode === "login" && (
+            <p className="mt-2 text-sm">
+              <Link href="/forgot-password" className="underline underline-offset-4">
+                Forgot password?
+              </Link>
             </p>
           )}
         </div>
