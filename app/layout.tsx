@@ -5,6 +5,7 @@ import { SITE_NAME } from "@/lib/site";
 import SearchBox from "./SearchBox";
 import AuthNav from "./AuthNav";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 
 const display = Bricolage_Grotesque({
   subsets: ["latin"],
@@ -62,6 +63,7 @@ export default function RootLayout({
             </nav>
           </div>
         </footer>
+        <Analytics />
       </body>
     </html>
   );

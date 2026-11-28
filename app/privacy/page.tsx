@@ -14,7 +14,7 @@ export default function PrivacyPage() {
       <h1 className="font-display text-5xl sm:text-6xl font-semibold tracking-tight">
         Privacy
       </h1>
-      <p className="mt-4 text-muted">Last updated: 27 November 2026</p>
+      <p className="mt-4 text-muted">Last updated: 28 November 2026</p>
       <p className="mt-6 text-xl">
         We collect as little as we can. You can read every tip on {SITE_NAME} without
         an account. This page explains what we keep when you create one.
@@ -39,9 +39,9 @@ export default function PrivacyPage() {
         </li>
       </ul>
       <p className="mt-4">
-        If you only browse, we do not ask you for anything. Our servers may record
-        basic technical information, such as your IP address, as part of normal
-        operation.
+        If you only browse, we do not ask you for anything. We count visits to our
+        pages, and our servers may record basic technical information, such as your IP
+        address, as part of normal operation.
       </p>
 
       <h2 className={h2}>Why we collect it</h2>
@@ -52,6 +52,7 @@ export default function PrivacyPage() {
         </li>
         <li>Requests for missing countries help us decide where to expand.</li>
         <li>Your votes decide the order of the tips.</li>
+        <li>Visit counts show us which pages are read, so we can improve the site.</li>
       </ul>
 
       <h2 className={h2}>What other people can see</h2>
@@ -63,18 +64,19 @@ export default function PrivacyPage() {
       <h2 className={h2}>Who handles your data</h2>
       <p>
         We use a few services to run the site. Supabase stores our database,
-        including accounts. Vercel hosts the website. Resend sends our account
-        emails, such as the confirmation message. Cloudflare Turnstile checks that
-        sign-ups and logins come from a person, and not a bot. These services process
-        data on our behalf, and may store it in data centers outside your country. We
-        do not sell your information, and we do not show advertising.
+        including accounts. Vercel hosts the website, and its web analytics counts
+        visits and shows us which pages are read. Resend sends our account emails,
+        such as the confirmation message. Cloudflare Turnstile checks that sign-ups
+        and logins come from a person, and not a bot. These services process data on
+        our behalf, and may store it in data centers outside your country. We do not
+        sell your information, and we do not show advertising.
       </p>
 
       <h2 className={h2}>Cookies and browser storage</h2>
       <p>
         We use browser storage to keep you logged in. Our bot check, provided by
         Cloudflare, may also use its own browser storage to do its job. We do not use
-        advertising or analytics cookies.
+        advertising cookies.
       </p>
 
       <h2 className={h2}>Your choices</h2>
