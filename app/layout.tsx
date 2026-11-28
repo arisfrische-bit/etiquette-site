@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Literata } from "next/font/google";
 import Link from "next/link";
+import { Analytics } from "@vercel/analytics/next";
 import { SITE_NAME, CONTACT_EMAIL } from "@/lib/site";
 import SearchBox from "./SearchBox";
 import AuthNav from "./AuthNav";
 import "./globals.css";
-import { Analytics } from "@vercel/analytics/next";
 
 const display = Bricolage_Grotesque({
   subsets: ["latin"],
@@ -50,25 +50,26 @@ export default function RootLayout({
 
         <main className="flex-1">{children}</main>
 
-                <footer className="border-t border-line text-sm text-muted">
+        <footer className="border-t border-line text-sm text-muted">
           <div className="mx-auto max-w-5xl px-6 py-8 flex flex-wrap items-center justify-between gap-4">
             <p>Tips begin as drafts and are ranked by verified local residents.</p>
-                        <nav className="flex gap-6">
+            <nav className="flex flex-wrap gap-x-6 gap-y-2">
               <Link href="/about" className="underline-offset-4 hover:underline">
                 About
               </Link>
               <Link href="/privacy" className="underline-offset-4 hover:underline">
                 Privacy
               </Link>
-                            <a
+              <a
                 href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Feedback")}`}
                 className="underline-offset-4 hover:underline"
               >
-                Feedback
+                Feedback: {CONTACT_EMAIL}
               </a>
             </nav>
           </div>
         </footer>
+
         <Analytics />
       </body>
     </html>
