@@ -10,7 +10,6 @@ import { CONTACT_EMAIL, PASSWORD_MIN_LENGTH } from "@/lib/site";
 type Mode = "login" | "signup";
 
 const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-const OTHER = "__other";
 
 function friendly(message: string) {
   const m = message.toLowerCase();
@@ -32,27 +31,22 @@ export default function LoginPage() {
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [country, setCountry] = useState("");
-  const [otherCountry, setOtherCountry] = useState("");
-  const [countries, setCountries] = useState<{ slug: string; name: string }[]>([]);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaError, setCaptchaError] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [info, setInfo] = useState("");
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
 
+  // Next.js keeps hidden pages alive, so clear the form whenever we leave
   useLayoutEffect(() => {
     return () => {
       setMode("login");
       setEmail("");
       setPassword("");
-      setCountry("");
-      setOtherCountry("");
       setShowPassword(false);
       setError("");
-      setInfo("");
       setSentTo(null);
       setBusy(false);
       turnstileRef.current?.reset();
@@ -72,11 +66,6 @@ export default function LoginPage() {
         goHome();
         return;
       }
-      const { data } = await supabase
-        .from("countries")
-        .select("slug, name")
-        .order("name");
-      setCountries(data ?? []);
       setChecking(false);
     }
     load();
@@ -92,7 +81,6 @@ export default function LoginPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    setInfo("");
     setBusy(true);
 
     if (mode === "login") {
@@ -112,13 +100,7 @@ export default function LoginPage() {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: {
-            home_country: country === OTHER ? "" : country,
-            requested_country: country === OTHER ? otherCountry : "",
-          },
-          captchaToken: captchaToken ?? undefined,
-        },
+        options: { captchaToken: captchaToken ?? undefined },
       });
       if (error) {
         setError(friendly(error.message));
@@ -142,7 +124,6 @@ export default function LoginPage() {
     setPassword("");
     setShowPassword(false);
     setError("");
-    setInfo("");
   }
 
   if (checking) return <div className="min-h-[24rem]" />;
@@ -156,6 +137,9 @@ export default function LoginPage() {
         <p className="mt-4 text-lg">
           We have sent a message to <strong>{sentTo}</strong>. Open it and click the
           link to confirm your account.
+        </p>
+        <p className="mt-4">
+          After that, verify your phone number on your profile page to vote.
         </p>
         <p className="mt-4 text-muted">
           Nothing after a few minutes? Check your spam folder, or write to{" "}
@@ -196,7 +180,7 @@ export default function LoginPage() {
       <p className="mt-3 text-muted">
         {mode === "login"
           ? "Log in to vote on tips for the country you live in."
-          : "Only verified residents can vote on a country's tips."}
+          : "Create an account, then verify your phone number to vote on your country's tips."}
       </p>
 
       <div role="tablist" className="mt-8 flex gap-8 border-b border-line">
@@ -257,6 +241,11 @@ export default function LoginPage() {
               {showPassword ? "Hide" : "Show"}
             </button>
           </div>
+          {mode === "signup" && (
+            <p className="mt-1 text-sm text-muted">
+              At least {PASSWORD_MIN_LENGTH} characters.
+            </p>
+          )}
           {mode === "login" && (
             <p className="mt-2 text-sm">
               <Link href="/forgot-password" className="underline underline-offset-4">
@@ -266,64 +255,19 @@ export default function LoginPage() {
           )}
         </div>
 
-        {mode === "signup" && (
-          <div>
-            <label htmlFor="country" className="mb-1 block text-sm font-medium">
-              Country you live in
-            </label>
-            <select
-              id="country"
-              required
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-              className="w-full rounded-xl border border-line bg-white px-4 py-3"
-            >
-              <option value="">Choose a country</option>
-              {countries.map((c) => (
-                <option key={c.slug} value={c.slug}>
-                  {c.name}
-                </option>
-              ))}
-              <option value={OTHER}>My country is not listed</option>
-            </select>
-
-            {country === OTHER ? (
-              <div className="mt-4">
-                <label
-                  htmlFor="other-country"
-                  className="mb-1 block text-sm font-medium"
-                >
-                  Which country?
-                </label>
-                <input
-                  id="other-country"
-                  type="text"
-                  required
-                  maxLength={60}
-                  value={otherCountry}
-                  onChange={(e) => setOtherCountry(e.target.value)}
-                  className="w-full rounded-xl border border-line bg-white px-4 py-3"
-                />
-                <p className="mt-1 text-sm text-muted">
-                  You can still read every tip. We add countries based on requests,
-                  and we will note yours.
-                </p>
-              </div>
-            ) : (
-              <p className="mt-1 text-sm text-muted">
-                We check your country before you can vote on its tips.
-              </p>
-            )}
-          </div>
-        )}
-
         {SITE_KEY && (
           <Turnstile
             ref={turnstileRef}
             siteKey={SITE_KEY}
-            onSuccess={setCaptchaToken}
+            onSuccess={(token) => {
+              setCaptchaToken(token);
+              setCaptchaError(false);
+            }}
             onExpire={() => setCaptchaToken(null)}
-            onError={() => setCaptchaToken(null)}
+            onError={() => {
+              setCaptchaToken(null);
+              setCaptchaError(true);
+            }}
             options={{ theme: "light", appearance: "interaction-only" }}
           />
         )}
@@ -331,11 +275,6 @@ export default function LoginPage() {
         {error && (
           <p role="alert" className="border-l-4 border-[#B3261E] py-1 pl-4">
             {error}
-          </p>
-        )}
-        {info && (
-          <p role="status" className="border-l-4 border-ink py-1 pl-4">
-            {info}
           </p>
         )}
 
@@ -346,6 +285,14 @@ export default function LoginPage() {
         >
           {busy ? "Please wait" : mode === "login" ? "Log in" : "Create account"}
         </button>
+
+        {SITE_KEY && !captchaToken && (
+          <p role="status" className="text-sm text-muted">
+            {captchaError
+              ? "The security check could not load. Check your connection, turn off any content blocker, or try another browser."
+              : "Running a quick security check..."}
+          </p>
+        )}
 
         {mode === "signup" && (
           <p className="text-sm text-muted">

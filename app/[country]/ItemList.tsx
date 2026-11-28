@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 
 type Item = { id: number; text: string; score: number };
 
-type Status = "out" | "no-country" | "pending" | "other" | "verified";
+type Status = "out" | "unverified" | "other" | "verified";
 
 function Thumb({ down = false }: { down?: boolean }) {
   return (
@@ -94,9 +94,8 @@ export default function ItemList({
       if (stale()) return;
 
       let next: Status;
-      if (!profile?.home_country) next = "no-country";
+      if (!profile?.verified || !profile.home_country) next = "unverified";
       else if (profile.home_country !== countrySlug) next = "other";
-      else if (!profile.verified) next = "pending";
       else next = "verified";
 
       let votes: Record<number, number> = {};
@@ -164,7 +163,7 @@ export default function ItemList({
 
   return (
     <div>
-        {loaded && (
+      {loaded && (
         <p className="text-muted mb-6" role="status">
           {status === "out" && (
             <>
@@ -176,37 +175,26 @@ export default function ItemList({
               to vote.
             </>
           )}
-          {status === "no-country" && (
+          {status === "unverified" && (
             <>
-              Tell us which country you live in.
+              Voting is for verified residents.
               <br />
               <Link href="/profile" className={linkClass}>
-                Set your country
+                Verify your phone number
               </Link>{" "}
               to vote.
             </>
           )}
-          {status === "pending" && (
-            <>
-              We are still checking that you live in {countryName}.
-              <br />
-              You can vote once you are verified.
-            </>
-          )}
           {status === "other" && (
             <>
-              Voting here is for people who live in {countryName}.
+              Voting here is for people verified in {countryName}.
               <br />
-              Your profile lists a different country.{" "}
-              <Link href="/profile" className={linkClass}>
-                Update your profile
-              </Link>
-              .
+              Your phone number is from a different country.
             </>
           )}
           {status === "verified" && (
             <>
-              You are a verified resident of {countryName}.
+              You are verified with a {countryName} phone number.
               <br />
               Vote on each tip.
             </>
