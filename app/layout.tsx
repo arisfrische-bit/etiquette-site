@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Literata } from "next/font/google";
 import Link from "next/link";
-import { SITE_NAME } from "@/lib/site";
+import { SITE_NAME, CONTACT_EMAIL } from "@/lib/site";
 import SearchBox from "./SearchBox";
 import AuthNav from "./AuthNav";
 import "./globals.css";
@@ -60,6 +60,12 @@ export default function RootLayout({
               <Link href="/privacy" className="underline-offset-4 hover:underline">
                 Privacy
               </Link>
+                            <a
+                href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Feedback")}`}
+                className="underline-offset-4 hover:underline"
+              >
+                Feedback
+              </a>
             </nav>
           </div>
         </footer>
