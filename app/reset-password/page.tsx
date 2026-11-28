@@ -53,6 +53,7 @@ export default function ResetPasswordPage() {
       setError(error.message);
       return;
     }
+    await supabase.auth.signOut({ scope: "others" });
     setState("done");
   }
 

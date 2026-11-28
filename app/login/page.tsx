@@ -110,6 +110,7 @@ export default function LoginPage() {
         return;
       }
       if (!data.session) {
+        setPassword("");
         setSentTo(email);
         setBusy(false);
         resetCaptcha();
@@ -121,6 +122,8 @@ export default function LoginPage() {
 
   function switchMode(next: Mode) {
     setMode(next);
+    setPassword("");
+    setShowPassword(false);
     setError("");
     setInfo("");
   }
