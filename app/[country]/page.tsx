@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import ItemList from "./ItemList";
 import { CONTACT_EMAIL } from "@/lib/site";
+import ItemList from "./ItemList";
 
 export const instant = false;
 
@@ -52,9 +52,8 @@ export default async function CountryPage({
           color={data.color}
           textColor={data.text_color}
         />
-      </div>
 
-      <p className="mt-10 text-muted">
+        <p className="mt-10 text-muted">
           Spot a mistake, or something missing for {data.name}? Write to{" "}
           <a
             href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Correction: ${data.name}`)}`}
@@ -63,8 +62,8 @@ export default async function CountryPage({
             {CONTACT_EMAIL}
           </a>
           .
-      </p>
-
+        </p>
+      </div>
     </>
   );
 }
