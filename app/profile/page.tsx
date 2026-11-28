@@ -23,7 +23,8 @@ function friendly(message: string) {
   if (m.includes("rate limit") || m.includes("too many"))
     return "Too many attempts. Wait a few minutes and try again.";
   if (m.includes("sms") || m.includes("send"))
-    return `We could not send a text to this number. Details: ${message}`;
+    return "We could not send a text to this number. Check it, or try again later.";
+    // return `We could not send a text to this number. Details: ${message}`;
   return message;
 }
 
