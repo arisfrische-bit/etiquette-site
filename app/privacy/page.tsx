@@ -14,7 +14,7 @@ export default function PrivacyPage() {
       <h1 className="font-display text-5xl sm:text-6xl font-semibold tracking-tight">
         Privacy
       </h1>
-      <p className="mt-4 text-muted">Last updated: 28 November 2026</p>
+      <p className="mt-4 text-muted">Last updated: 29 November 2026</p>
       <p className="mt-6 text-xl">
         We collect as little as we can. You can read every tip on {SITE_NAME} without
         an account. This page explains what we keep when you create one.
@@ -27,12 +27,16 @@ export default function PrivacyPage() {
           scrambled form that we cannot read.
         </li>
         <li>
-          <strong>The country you say you live in,</strong> and whether we have
-          verified it.
+          <strong>Your phone number,</strong> if you verify it. You give it to us once,
+          so we can confirm which country you live in.
         </li>
         <li>
-          <strong>The name of your country, if it is not on our list,</strong> so we
-          can decide which countries to add.
+          <strong>Your country,</strong> which we work out from your verified phone
+          number.
+        </li>
+        <li>
+          <strong>The name of your country, if we do not cover it yet,</strong> when
+          you ask us to add it.
         </li>
         <li>
           <strong>Your votes</strong> on tips.
@@ -48,8 +52,10 @@ export default function PrivacyPage() {
       <ul className="list-disc pl-6 grid gap-2">
         <li>Your email lets you log in and lets us contact you about your account.</li>
         <li>
-          Your country and verification status decide which tips you can vote on.
+          Your phone number lets us send you one code to confirm your country. We do
+          not use it for marketing, and we do not send you anything else.
         </li>
+        <li>Your country decides which tips you can vote on.</li>
         <li>Requests for missing countries help us decide where to expand.</li>
         <li>Your votes decide the order of the tips.</li>
         <li>Visit counts show us which pages are read, so we can improve the site.</li>
@@ -57,8 +63,8 @@ export default function PrivacyPage() {
 
       <h2 className={h2}>What other people can see</h2>
       <p>
-        Your email, country and individual votes are private. Other visitors see only
-        the final order of the tips, never who voted for what.
+        Your email, phone number, country and individual votes are private. Other
+        visitors see only the final order of the tips, never who voted for what.
       </p>
 
       <h2 className={h2}>Who handles your data</h2>
@@ -66,10 +72,11 @@ export default function PrivacyPage() {
         We use a few services to run the site. Supabase stores our database,
         including accounts. Vercel hosts the website, and its web analytics counts
         visits and shows us which pages are read. Resend sends our account emails,
-        such as the confirmation message. Cloudflare Turnstile checks that sign-ups
-        and logins come from a person, and not a bot. These services process data on
-        our behalf, and may store it in data centers outside your country. We do not
-        sell your information, and we do not show advertising.
+        such as the confirmation message. Twilio sends the text message with your
+        verification code. Cloudflare Turnstile checks that sign-ups and logins come
+        from a person, and not a bot. These services process data on our behalf, and
+        may store it in data centers outside your country. We do not sell your
+        information, and we do not show advertising.
       </p>
 
       <h2 className={h2}>Cookies and browser storage</h2>
@@ -81,17 +88,18 @@ export default function PrivacyPage() {
 
       <h2 className={h2}>Your choices</h2>
       <p>
-        You can see and change your country on your profile page. To delete your
-        account, email us. We will delete your account, your profile and your votes.
-        You can also ask for a copy of the information we hold about you, or ask us to
-        correct it.
+        To change your country or phone number, or to delete your account, email us.
+        When we delete an account, we delete your profile, your votes and your phone
+        number. You can also ask for a copy of the information we hold about you, or
+        ask us to correct it.
       </p>
 
       <h2 className={h2}>How long we keep it</h2>
       <p>
         We keep your information for as long as your account exists. When we delete
-        the account, the profile and votes go with it. Our email provider may keep
-        delivery records of the messages it sent for a limited time.
+        the account, the profile, phone number and votes go with it. Our email and
+        text message providers may keep delivery records of the messages they sent for
+        a limited time.
       </p>
 
       <h2 className={h2}>Children</h2>

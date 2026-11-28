@@ -8,6 +8,8 @@ export const metadata: Metadata = {
     "How our etiquette tips are written, how locals rank them, and how we verify residents.",
 };
 
+const h2 = "font-display text-2xl font-semibold mt-14 mb-3";
+
 export default function AboutPage() {
   return (
     <div className="mx-auto max-w-2xl px-6 py-16 sm:py-24">
@@ -20,9 +22,7 @@ export default function AboutPage() {
         people who live in each country decide which ones matter most.
       </p>
 
-      <h2 className="font-display text-2xl font-semibold mt-14 mb-3">
-        How the tips are written
-      </h2>
+      <h2 className={h2}>How the tips are written</h2>
       <p>
         Each tip starts as a draft, written with the help of AI and reviewed by us
         before it is published. A draft can still be wrong or out of date, which is
@@ -30,47 +30,41 @@ export default function AboutPage() {
         down tells us.
       </p>
 
-      <h2 className="font-display text-2xl font-semibold mt-14 mb-3">
-        How the ranking works
-      </h2>
+      <h2 className={h2}>How the ranking works</h2>
       <p>
         Tips are listed in the order locals vote for them. A thumbs up means the tip
         is true and it matters. A thumbs down means it is wrong, or too minor to
         include. Each person gets one vote per tip, and can change it at any time.
       </p>
 
-      <h2 className="font-display text-2xl font-semibold mt-14 mb-3">
-        How we verify locals
-      </h2>
+      <h2 className={h2}>How we verify locals</h2>
       <p>
-        When you create an account, you tell us which country you live in. You can
-        vote only on that country, and only once you are verified. For now we
-        confirm residents by hand, and we will add phone verification as the
-        community grows.
+        To vote, you create an account, confirm your email, and verify a phone number.
+        We send one code by text message. The country of your number becomes the
+        country you can vote on. One phone number can belong to only one account.
       </p>
       <p className="mt-4">
-        No system is perfect, so we call you a verified resident, not a guaranteed
-        local.
+        This is a filter, not proof. A phone number shows where the number was issued,
+        not where you live. Someone who has moved abroad may keep their old number, and
+        a determined person can obtain a number they do not use. So we say verified
+        with a local phone number, not a guaranteed local. If you live in a country we
+        do not cover yet, you can ask us to add it.
       </p>
 
-      <h2 className="font-display text-2xl font-semibold mt-14 mb-3">
-        Where we are today
-      </h2>
+      <h2 className={h2}>Where we are today</h2>
       <p>
         This site is new. Many lists are still drafts, and few votes have been cast.
         Treat the order as a starting point, not a verdict. It will get more
         reliable with every local who joins.
       </p>
 
-      <h2 className="font-display text-2xl font-semibold mt-14 mb-3">
-        Live in one of these countries?
-      </h2>
+      <h2 className={h2}>Live in one of these countries?</h2>
       <p>
         <Link href="/login" className="underline underline-offset-4">
           Create an account
-        </Link>{" "}
-        and choose your country. Once we have verified you, you can vote on every tip
-        for it.
+        </Link>
+        , confirm your email, and verify your phone number. Then you can vote on every
+        tip for your country.
       </p>
       <p className="mt-4">
         Spotted a mistake, or want to suggest a destination? Email{" "}
