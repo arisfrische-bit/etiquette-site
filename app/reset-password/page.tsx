@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { PASSWORD_MIN_LENGTH } from "@/lib/site";
@@ -14,6 +14,17 @@ export default function ResetPasswordPage() {
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+
+    useLayoutEffect(() => {
+    return () => {
+      setPassword("");
+      setConfirm("");
+      setShow(false);
+      setError("");
+      setBusy(false);
+      setState("checking");
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;

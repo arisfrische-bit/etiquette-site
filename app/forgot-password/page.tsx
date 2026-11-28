@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { supabase } from "@/lib/supabase";
@@ -23,6 +23,17 @@ export default function ForgotPasswordPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [sentTo, setSentTo] = useState<string | null>(null);
+
+  useLayoutEffect(() => {
+    return () => {
+      setEmail("");
+      setError("");
+      setSentTo(null);
+      setBusy(false);
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
+    };
+  }, []);
 
   function resetCaptcha() {
     turnstileRef.current?.reset();

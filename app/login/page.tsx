@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
@@ -42,6 +42,23 @@ export default function LoginPage() {
   const [info, setInfo] = useState("");
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
+
+  useLayoutEffect(() => {
+    return () => {
+      setMode("login");
+      setEmail("");
+      setPassword("");
+      setCountry("");
+      setOtherCountry("");
+      setShowPassword(false);
+      setError("");
+      setInfo("");
+      setSentTo(null);
+      setBusy(false);
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
+    };
+  }, []);
 
   function goHome() {
     router.replace("/");
